@@ -43,7 +43,7 @@ main = do
 
               arrayPoll <#~> \_ -> Deku.do
                 { value: item } <- useDynAtEnd items
-                D.tr_ [ D.tr__ item ]
+                D.tr_ [ D.td__ item ]
           ]
       ]
 
