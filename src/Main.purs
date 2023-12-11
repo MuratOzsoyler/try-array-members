@@ -23,7 +23,7 @@ main = do
   launchAff_ do
     delay (Milliseconds 0.0)
     liftEffect (push [ "A" ])
-    delay (Milliseconds 0.0)
+    delay (Milliseconds 1000.0)
     liftEffect (push [ "X", "Y" ])
   runInBody Deku.do
     pushItem /\ items <- useState'
