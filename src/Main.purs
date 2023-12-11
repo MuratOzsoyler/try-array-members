@@ -7,6 +7,7 @@ import Data.Foldable (traverse_)
 import Data.Tuple.Nested ((/\))
 import Deku.DOM as D
 import Deku.Do as Deku
+import Deku.Effect as DE
 import Deku.Hooks (useDynAtEnd, useState', (<#~>))
 import Deku.Toplevel (runInBody)
 import Effect (Effect)
@@ -19,26 +20,30 @@ import FRP.Poll as Poll
 
 main :: Effect Unit
 main = do
-  { push, poll } <- toEffect Poll.create
+  _ /\ push /\ poll <- toEffect $ DE.useHot [ "A", "B" ] -- DE.useState [ "A", "B" ] -- DE.useState' --  Poll.create
   launchAff_ do
-    delay (Milliseconds 0.0)
-    liftEffect (push [ "A" ])
+    -- delay (Milliseconds 0.0)
+    -- liftEffect (push [ "A", "B" ])
     delay (Milliseconds 1000.0)
     liftEffect (push [ "X", "Y" ])
+    delay (Milliseconds 1000.0)
+    liftEffect (push [ "M", "N" ])
   runInBody Deku.do
-    pushItem /\ items <- useState'
-    let
-      arrayPoll = poll # bindPollToEffect \arr -> launchAff_ do
-        Console.debug "before delay"
-        delay $ Milliseconds 0.0
-        Console.debug "after delay"
-        liftEffect (arr # traverse_ pushItem)
     D.table_
       [ D.thead_ [ D.tr_ [ D.th__ "*" ] ]
       , D.tbody_
-          [ arrayPoll <#~> \_ -> Deku.do
-              { value: item } <- useDynAtEnd items
-              D.tr_ [ D.tr__ item ]
+          [ Deku.do
+              pushItem /\ items <- useState'
+              let
+                arrayPoll = poll # bindPollToEffect \arr -> launchAff_ do
+                  -- Console.debug "before delay"
+                  delay $ Milliseconds 0.0
+                  -- Console.debug "after delay"
+                  liftEffect (arr # traverse_ pushItem)
+
+              arrayPoll <#~> \_ -> Deku.do
+                { value: item } <- useDynAtEnd items
+                D.tr_ [ D.tr__ item ]
           ]
       ]
 
